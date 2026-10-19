@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chúc Mừng 20/10 - Tác giả: Trần Văn Huy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #2b112c;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .font-handwriting {
+      font-family: 'Dancing Script', cursive;
+    }
+
+    /* --- PAGE 1: PASSCODE SCREEN --- */
+    #page-lock {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #2b112c;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+      z-index: 10;
+    }
+
+    #page-lock.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .passcode-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .avatars {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #ffd1dc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .title {
+      font-size: 14px;
+      letter-spacing: 1px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: #e2b6db;
+      text-transform: uppercase;
+    }
+
+    .dots-container {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      transition: all 0.2s ease;
+    }
+
+    .dot.filled {
+      background-color: #ffffff;
+      border-color: #ffffff;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+    }
+
+    .dot.error {
+      animation: shake 0.3s ease-in-out;
+      border-color: #ff4d4d;
+      background-color: #ff4d4d;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+      justify-items: center;
+    }
+
+    .key {
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      font-size: 22px;
+      font-weight: 400;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .key:active {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(0.95);
+    }
+
+    .key.empty {
+      visibility: hidden;
+    }
+
+    .author-lock {
+      position: absolute;
+      bottom: 20px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* --- PAGE 2: MAIN PRESENTATION SCREEN --- */
+    #page-main {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #2e103f 0%, #12071f 60%, #08030e 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 1s ease;
+      z-index: 5;
+    }
+
+    #page-main.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #particleCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .text-glow {
+      text-shadow: 0 0 15px #f472b6, 0 0 30px #ec4899, 0 0 50px #db2777;
+    }
+
+    /* Dòng chữ chạy ngang (Marquee) phía dưới */
+    .marquee-wrapper {
+      position: absolute;
+      bottom: 25px;
+      left: 0;
+      width: 100%;
+      overflow: hidden;
+      background: rgba(236, 72, 153, 0.15);
+      border-top: 1px solid rgba(236, 72, 153, 0.4);
+      border-bottom: 1px solid rgba(236, 72, 153, 0.4);
+      padding: 12px 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
+
+    .marquee-track {
+      display: inline-block;
+      white-space: nowrap;
+      animation: marqueeScroll 18s linear infinite;
+      font-size: 1.1rem;
+      color: #ffb6c1;
+      font-weight: 600;
+      text-shadow: 0 0 12px rgba(255, 182, 193, 0.8);
+    }
+
+    .marquee-wrapper:hover .marquee-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes marqueeScroll {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Âm thanh nền -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Nút bật/tắt nhạc -->
+  <button id="musicBtn" onclick="toggleMusic()" style="display:none;" class="fixed top-4 right-4 z-50 bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/20 hover:bg-white/20 transition cursor-pointer">
+    <svg id="musicIcon" class="w-6 h-6 text-pink-400" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+    </svg>
+  </button>
+
+  <!-- TRANG 1: MÀN HÌNH KHÓA MẬT KHẨU -->
+  <div id="page-lock">
+    <div class="passcode-container">
+      <div class="avatars">
+        <div class="avatar">🧸</div>
+        <div class="avatar">🐰</div>
+      </div>
+
+      <div class="title">Nhập Mật Khẩu</div>
+
+      <div class="dots-container">
+        <div class="dot" id="dot-0"></div>
+        <div class="dot" id="dot-1"></div>
+        <div class="dot" id="dot-2"></div>
+        <div class="dot" id="dot-3"></div>
+      </div>
+
+      <div class="keypad">
+        <div class="key" onclick="pressNum('1')">1</div>
+        <div class="key" onclick="pressNum('2')">2</div>
+        <div class="key" onclick="pressNum('3')">3</div>
+        <div class="key" onclick="pressNum('4')">4</div>
+        <div class="key" onclick="pressNum('5')">5</div>
+        <div class="key" onclick="pressNum('6')">6</div>
+        <div class="key" onclick="pressNum('7')">7</div>
+        <div class="key" onclick="pressNum('8')">8</div>
+        <div class="key" onclick="pressNum('9')">9</div>
+        <div class="key empty"></div>
+        <div class="key" onclick="pressNum('0')">0</div>
+        <div class="key" onclick="deleteNum()">⌫</div>
+      </div>
+    </div>
+    <div class="author-lock">Thiết kế bởi: <strong>Trần Văn Huy</strong></div>
+  </div>
+
+  <!-- TRANG 2: NỘI DUNG CHÍNH (HIỆU ỨNG CHỮ + MƯA HOA + CHỮ CHẠY) -->
+  <div id="page-main">
+    <canvas id="particleCanvas"></canvas>
+
+    <div id="textOverlay" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+      <h1 id="animatedText" class="font-handwriting text-5xl md:text-7xl font-bold text-center text-pink-300 text-glow px-4 opacity-0 transition-all duration-700 transform scale-90">
+        Chúc mừng
+      </h1>
+    </div>
+
+    <!-- Dòng chữ chạy ngang -->
+    <div class="marquee-wrapper">
+      <div class="marquee-track">
+        🌸 Chúc Mừng Ngày Phụ Nữ Việt Nam 20/10 🌸 Chúc một nửa thế giới luôn rạng rỡ, xinh đẹp và ngập tràn hạnh phúc! ✨ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --- Tác giả thiết kế: <span style="color: #ffffff; font-weight: bold;">Trần Văn Huy</span> ---
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CORRECT_PASSCODE = "2010"; // Mật khẩu là 2010
+    let currentInput = "";
+
+    const GREETING_TEXTS = [
+      "Chúc mừng",
+      "Ngày Phụ Nữ Việt Nam",
+      "20 tháng 10",
+      "Lớp  - K51"
+    ];
+
+    function pressNum(num) {
+      if (currentInput.length < 4) {
+        currentInput += num;
+        updateDots();
+
+        if (currentInput.length === 4) {
+          setTimeout(checkPasscode, 200);
+        }
+      }
+    }
+
+    function deleteNum() {
+      if (currentInput.length > 0) {
+        currentInput = currentInput.slice(0, -1);
+        updateDots();
+      }
+    }
+
+    function updateDots() {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (i < currentInput.length) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      }
+    }
+
+    function checkPasscode() {
+      if (currentInput === CORRECT_PASSCODE) {
+        document.getElementById('page-lock').classList.add('hidden');
+        document.getElementById('page-main').classList.add('active');
+        
+        playMusic();
+        startTextSequence();
+      } else {
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach(dot => dot.classList.add('error'));
+
+        setTimeout(() => {
+          dots.forEach(dot => dot.classList.remove('error'));
+          currentInput = "";
+          updateDots();
+        }, 500);
+      }
+    }
+
+    const audio = document.getElementById('bgMusic');
+    let isPlaying = false;
+
+    function playMusic() {
+      audio.play().then(() => {
+        isPlaying = true;
+        document.getElementById('musicBtn').style.display = 'block';
+      }).catch(e => {
+        document.getElementById('musicBtn').style.display = 'block';
+      });
+    }
+
+    function toggleMusic() {
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+        document.getElementById('musicIcon').style.opacity = '0.5';
+      } else {
+        audio.play();
+        isPlaying = true;
+        document.getElementById('musicIcon').style.opacity = '1';
+      }
+    }
+
+    let showFlowerRain = false; // Biến kiểm soát trạng thái bắt đầu mưa hoa
+
+    function startTextSequence() {
+      let textIndex = 0;
+      const textElem = document.getElementById('animatedText');
+
+      function showNextText() {
+        if (textIndex < GREETING_TEXTS.length) {
+          textElem.textContent = GREETING_TEXTS[textIndex];
+          textElem.classList.remove('opacity-0', 'scale-90');
+          textElem.classList.add('opacity-100', 'scale-100');
+
+          setTimeout(() => {
+            textElem.classList.remove('opacity-100', 'scale-100');
+            textElem.classList.add('opacity-0', 'scale-110');
+            textIndex++;
+            
+            // Nếu đã chạy xong chữ "Lớp 10A8 - K51" (index hiện tại đã qua), bật mưa hoa
+            if (textIndex === GREETING_TEXTS.length) {
+              showFlowerRain = true;
+            }
+
+            setTimeout(showNextText, 800);
+          }, 2200);
+        } else {
+          textIndex = 0;
+          showNextText();
+        }
+      }
+      showNextText();
+    }
+
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let flowerPetals = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Hạt lấp lánh nền
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 3 + 0.5;
+        this.speedX = (Math.random() - 0.5) * 0.8;
+        this.speedY = (Math.random() - 0.5) * 0.8;
+        this.alpha = Math.random() * 0.8 + 0.2;
+        this.alphaSpeed = Math.random() * 0.02 + 0.005;
+        this.color = Math.random() > 0.3 ? '#f472b6' : '#ffffff';
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha += this.alphaSpeed;
+
+        if (this.alpha > 1 || this.alpha < 0.2) {
+          this.alphaSpeed = -this.alphaSpeed;
+        }
+
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Cánh hoa rơi (Mưa hoa)
+    class FlowerPetal {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = -20;
+        this.size = Math.random() * 8 + 6;
+        this.speedY = Math.random() * 1.5 + 1;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.angle = Math.random() * 360;
+        this.spin = Math.random() * 0.05 - 0.025;
+        this.color = Math.random() > 0.5 ? '#ffb6c1' : '#ff69b4';
+        this.opacity = Math.random() * 0.6 + 0.4;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += Math.sin(this.angle) * 0.8 + this.speedX;
+        this.angle += this.spin;
+
+        if (this.y > canvas.height + 20) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, this.size, this.size / 2, this.angle, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < 100; i++) {
+      particles.push(new Particle());
+    }
+
+    for (let i = 0; i < 40; i++) {
+      flowerPetals.push(new FlowerPetal());
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Vẽ hạt lấp lánh nền
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      // Chỉ vẽ mưa hoa khi đã chạy xong chuỗi chữ đến lớp 10a8
+      if (showFlowerRain) {
+        flowerPetals.forEach(fp => {
+          fp.update();
+          fp.draw();
+        });
+      }
+
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+  </script>
+</body>
+</html>
